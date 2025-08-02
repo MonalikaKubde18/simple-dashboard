@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grading Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=1500&q=80') no-repeat center center fixed;
+      background-size: cover;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #fff;
+    }
+    .student-card {
+      background: rgba(255, 255, 255, 0.8);
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease;
+    }
+    .top-scorer {
+      box-shadow: 0 4px 10px rgba(0,128,0,0.6);
+      transform: scale(1.02);
+    }
+    .result {
+      margin-top: 10px;
+    }
+    .animate {
+      animation: flash 0.5s;
+    }
+    .submitted-highlight {
+      box-shadow: 0 0 20px 5px #2196f3 !important;
+      transition: box-shadow 0.3s;
+    }
+    @keyframes flash {
+      0% { background-color: #fff; }
+      50% { background-color: #e0ffe0; }
+      100% { background-color: #fff; }
+    }
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #555;
+    }
+    button {
+      background: linear-gradient(90deg, #2196f3 0%, #21cbf3 100%);
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 28px;
+      font-size: 1.1em;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(33, 203, 243, 0.2);
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #21cbf3 0%, #2196f3 100%);
+      transform: scale(1.07);
+      box-shadow: 0 4px 16px rgba(33, 203, 243, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <h2>Internal Assessment Grading Dashboard</h2>
+  <div id="form-container"></div>
+  <footer>
+    Developed by Monalika Kubde | Completed on: <span id="time"></span>
+  </footer>
+
+  <script>
+    const students = [
+      { name: "Rohit Sharma", roll: 101 },
+      { name: "Ankita Verma", roll: 102 },
+      { name: "Sahil Mehta", roll: 103 },
+    ];
+
+    const container = document.getElementById("form-container");
+
+    students.forEach((student, i) => {
+      container.innerHTML += `
+        <div class="student-card">
+          <h3>${student.name} (Roll No: ${student.roll})</h3>
+          <label>Maths (Slider): <input type="range" min="0" max="100" value="0" id="maths-${i}"></label><br><br>
+          <label>Physics (Input): <input type="number" min="0" max="100" id="physics-${i}"></label><br><br>
+          <label>Chemistry (Dropdown):
+            <select id="chemistry-${i}">
+              ${Array.from({length:101},(_,n)=>`<option value='${n}'>${n}</option>`).join("")}
+            </select>
+          </label><br><br>
+          <button onclick="calculate(${i})">Submit</button>
+          <div class="result" id="result-${i}"></div>
+        </div>
+      `;
+    });
+
+    // Example: prompt() input
+    // let name = prompt("Enter your name:");
+    // alert("Hello, " + name);
+
+    // Example: real-time input capture
+    // <input type="text" id="liveInput" placeholder="Type something">
+    // <p id="display"></p>
+    // document.getElementById("liveInput").addEventListener("keyup", function() {
+    //   document.getElementById("display").innerText = this.value;
+    // });
+
+    function calculate(i) {
+      const maths = +document.getElementById(`maths-${i}`).value;
+      const physics = +document.getElementById(`physics-${i}`).value;
+      const chemistry = +document.getElementById(`chemistry-${i}`).value;
+      if ([maths, physics, chemistry].some(m => isNaN(m) || m < 0 || m > 100)) {
+        document.getElementById(`result-${i}`).innerHTML = "<span style='color:red;'>Invalid input!</span>";
+        return;
+      }
+      const avg = Math.round((maths + physics + chemistry) / 3);
+      let grade = avg >= 85 ? "A" : avg >= 70 ? "B" : avg >= 50 ? "C" : "F";
+      let remark = avg >= 85 ? "Excellent" : avg >= 70 ? "Good" : avg >= 50 ? "Needs Improvement" : "Fail";
+      const resultDiv = document.getElementById(`result-${i}`);
+      resultDiv.innerHTML = `<strong>Average:</strong> ${avg} <br><strong>Grade:</strong> ${grade} <br><strong>Remark:</strong> ${remark}`;
+      resultDiv.classList.add("animate");
+      setTimeout(() => resultDiv.classList.remove("animate"), 500);
+      const card = document.querySelectorAll(".student-card")[i];
+      card.classList.add("submitted-highlight");
+      setTimeout(() => card.classList.remove("submitted-highlight"), 500);
+      highlightTopper();
+    }
+
+    function highlightTopper() {
+      let scores = students.map((_, i) => {
+        const result = document.getElementById(`result-${i}`).innerText;
+        const avgMatch = result.match(/Average:\s*(\d+)/);
+        return avgMatch ? +avgMatch[1] : -1;
+      });
+      const maxScore = Math.max(...scores);
+      document.querySelectorAll(".student-card").forEach((card, i) => {
+        card.classList.remove("top-scorer");
+        if (scores[i] === maxScore && maxScore !== -1) card.classList.add("top-scorer");
+      });
+    }
+
+    document.getElementById("time").textContent = new Date().toLocaleString();
+  </script>
+</body>
+</html>
